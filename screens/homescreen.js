@@ -128,9 +128,9 @@ const MarketPriceSection = () => {
   const [states, setStates] = useState(['All States']);
   const [districts, setDistricts] = useState(['All Districts']);
 
-  const API_KEY = "579b464db66ec23bdd000001cdd3946e44ce4aad7209ff7b23ac571b";
+  const API_KEY = "579b464db66ec23bdd000001cc431f8c96fa4351742a2142f4235537";
   const RESOURCE_ID = "9ef84268-d588-465a-a308-a864a43d0070";
-  const API_URL = `https://api.data.gov.in/resource/${RESOURCE_ID}?api-key=${API_KEY}&format=json&limit=100`;
+  const API_URL = `https://api.data.gov.in/resource/${RESOURCE_ID}?api-key=${API_KEY}&format=json&limit=1000`;
 
   useEffect(() => {
     const fetchMarketPrices = async () => {
@@ -465,6 +465,18 @@ export default function HomeScreen({ navigation }) {
   <Text style={styles.actionButtonText}>Ask AI</Text>
 </TouchableOpacity>
 
+          <TouchableOpacity style={[styles.actionButton, { backgroundColor: '#A7C7E7' }]}
+          onPress={() => navigation.navigate('News')}>
+            <NewsIcon />
+            <Text style={styles.actionButtonText}>News</Text>
+          </TouchableOpacity>
+
+         <TouchableOpacity style={[styles.actionButton, { backgroundColor: '#FDFD96' }]}>
+            <GovSchemeIcon />
+            <Text style={styles.actionButtonText}>Schemes</Text>
+          </TouchableOpacity>
+        
+
           <TouchableOpacity style={[styles.actionButton, { backgroundColor: '#bdffd0ff' }]}>
             <LoanIcon />
             <Text style={styles.actionButtonText}>Loan</Text>
@@ -473,16 +485,8 @@ export default function HomeScreen({ navigation }) {
             <YoutubeIcon />
             <Text style={styles.actionButtonText}>Youtube</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.actionButton, { backgroundColor: '#A7C7E7' }]}
-          onPress={() => navigation.navigate('News')}>
-            <NewsIcon />
-            <Text style={styles.actionButtonText}>News</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.actionButton, { backgroundColor: '#FDFD96' }]}>
-            <GovSchemeIcon />
-            <Text style={styles.actionButtonText}>Schemes</Text>
-          </TouchableOpacity>
-        </ScrollView>
+          
+         </ScrollView>
 
          {/* Market Price Section - Using the new MarketPriceSection component */}
         <Text style={styles.marketPriceTitle}>Market Price</Text>
@@ -533,7 +537,7 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
   },
   header: {
-    marginTop: Platform.OS === 'android' ? -15 : 0,
+    
     height: 300,
     flexDirection: 'row',
     justifyContent: 'space-between',

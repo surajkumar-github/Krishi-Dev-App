@@ -1,3 +1,4 @@
+import 'react-native-get-random-values'; // This MUST be first
 import React, { useEffect, useRef, useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet,
@@ -6,7 +7,6 @@ import {
 import Constants from 'expo-constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
-import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
 import Markdown from 'react-native-markdown-display';
 import * as ImagePicker from 'expo-image-picker';
@@ -24,15 +24,50 @@ export default function ChatScreen() {
   const inputRef = useRef();
 
   useEffect(() => {
-    const initUserId = async () => {
-      let id = await AsyncStorage.getItem('userId');
-      if (!id) {
-        id = uuidv4();
-        await AsyncStorage.setItem('userId', id);
+    const initAndLoadChats = async () => {
+      try {
+        // First, ensure userId is set
+        let id = await AsyncStorage.getItem('userId');
+        if (!id) {
+          id = uuidv4();
+          await AsyncStorage.setItem('userId', id);
+        }
+        setUserId(id);
+
+        // Now load chats with the guaranteed userId
+        const res = await fetch(`${API_URL}/chats/${id}`);
+        if (!res.ok) throw new Error(`Server error: ${res.status}`);
+        const data = await res.json();
+        if (!Array.isArray(data)) return;
+
+        const formatted = data.flatMap(chat => {
+          if (chat.type === 'text') {
+            return [
+              { type: 'text', content: chat.question, sender: 'user' },
+              { type: 'text', content: chat.response, sender: 'bot' }
+            ];
+          } else if (chat.type === 'image') {
+            const mime = chat.content_type || 'image/jpeg';
+            const base64 = chat.image_base64 || '';
+            const uri = `data:${mime};base64,${base64}`;
+
+            return [
+              { type: 'image', content: uri, sender: 'user' },
+              { type: 'text', content: chat.result || 'No analysis result.', sender: 'bot' }
+            ];
+          } else {
+            return [];
+          }
+        });
+
+        setMessages(formatted);
+        setTimeout(() => scrollRef.current?.scrollToEnd({ animated: false }), 300);
+      } catch (err) {
+        console.error('❌ Failed to load chats:', err.message);
       }
-      setUserId(id);
     };
-    initUserId();
+
+    initAndLoadChats();
   }, []);
 
   useEffect(() => {
@@ -54,47 +89,6 @@ export default function ChatScreen() {
       keyboardDidHideListener.remove();
     };
   }, []);
-
-  useEffect(() => {
-  if (!userId) return;
-
-  const loadChats = async () => {
-    try {
-      const res = await fetch(`${API_URL}/chats/${userId}`);
-      if (!res.ok) throw new Error(`Server error: ${res.status}`);
-      const data = await res.json();
-      if (!Array.isArray(data)) return;
-
-      const formatted = data.flatMap(chat => {
-        if (chat.type === 'text') {
-          return [
-            { type: 'text', content: chat.question, sender: 'user' },
-            { type: 'text', content: chat.response, sender: 'bot' }
-          ];
-        } else if (chat.type === 'image') {
-          const mime = chat.content_type || 'image/jpeg'; // Default fallback
-          const base64 = chat.image_base64 || ''; // base64 string from backend
-          const uri = `data:${mime};base64,${base64}`;
-
-          return [
-            { type: 'image', content: uri, sender: 'user' },
-            { type: 'text', content: chat.result || 'No analysis result.', sender: 'bot' }
-          ];
-        } else {
-          return [];
-        }
-      });
-
-      setMessages(formatted);
-      setTimeout(() => scrollRef.current?.scrollToEnd({ animated: false }), 300);
-    } catch (err) {
-      console.error('❌ Failed to load chats:', err.message);
-    }
-  };
-
-  loadChats();
-}, [userId]);
-
 
   useEffect(() => {
     setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
@@ -432,8 +426,8 @@ const styles = StyleSheet.create({
   sendButton: {
     padding: 10,
     backgroundColor: '#2E7D32',
-    borderRadius: 50,
-  },
+    borderRadius: 50
+      },
   floatingKeyboardButton: {
     position: 'absolute',
     right: 20,
