@@ -128,7 +128,7 @@ const MarketPriceSection = () => {
   const [states, setStates] = useState(['All States']);
   const [districts, setDistricts] = useState(['All Districts']);
 
-  const API_KEY = "579b464db66ec23bdd000001cc431f8c96fa4351742a2142f4235537";
+  const API_KEY = "";
   const RESOURCE_ID = "9ef84268-d588-465a-a308-a864a43d0070";
   const API_URL = `https://api.data.gov.in/resource/${RESOURCE_ID}?api-key=${API_KEY}&format=json&limit=1000`;
 
